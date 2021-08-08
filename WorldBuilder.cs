@@ -31,7 +31,7 @@ public class WorldBuilder : MonoBehaviour
 
     private GameObject GetRandomGem()
     {
-        int random_index = Random.Range(0, gemBlocks.Count);
-        return gemBlocks[random_index];
+        int randomIndex = Random.Range(0, gemBlocks.Count);
+        return gemBlocks[randomIndex];
     }
 }

@@ -47,35 +47,35 @@ public class PlayerController : MonoBehaviour
         else if(Input.GetKeyDown(KeyCode.W)) MovePlayer(0, -1, 0); //move up a layer
     }
 
-    private void MovePlayer(int x_offset, int y_offset, int z_offset)
+    private void MovePlayer(int xOffset, int yOffset, int zOffset)
     {
-        if(worldController.CanMoveInDirection(x, y, z, x_offset, y_offset, z_offset))
+        if(worldController.CanMoveInDirection(x, y, z, xOffset, yOffset, zOffset))
         {
-            RotatePlayerInCorrectDirection(x_offset, y_offset, z_offset);
-            ChangePlayerPosition(x_offset, y_offset, z_offset);
+            RotatePlayerInCorrectDirection(xOffset, yOffset, zOffset);
+            ChangePlayerPosition(xOffset, yOffset, zOffset);
         }
     }
 
-    private void RotatePlayerInCorrectDirection(int x_offset, int y_offset, int z_offset)
+    private void RotatePlayerInCorrectDirection(int xOffset, int yOffset, int zOffset)
     {
-        if(x_offset == 1) this.gameObject.transform.eulerAngles = new Vector3(0f, 90f, 0f);
-        else if(x_offset == -1) this.gameObject.transform.eulerAngles = new Vector3(0f, -90f, 0f);
-        else if(y_offset == 1) this.gameObject.transform.eulerAngles = new Vector3(90f, 0f, 0f);
-        else if(y_offset == -1) this.gameObject.transform.eulerAngles = new Vector3(-90f, 0f, 0f);
-        else if(z_offset == 1) this.gameObject.transform.eulerAngles = new Vector3(0f, 0f, 0f);
-        else if(z_offset == -1) this.gameObject.transform.eulerAngles = new Vector3(0f, 180f, 0f);
+        if(xOffset == 1) this.gameObject.transform.eulerAngles = new Vector3(0f, 90f, 0f);
+        else if(xOffset == -1) this.gameObject.transform.eulerAngles = new Vector3(0f, -90f, 0f);
+        else if(yOffset == 1) this.gameObject.transform.eulerAngles = new Vector3(90f, 0f, 0f);
+        else if(yOffset == -1) this.gameObject.transform.eulerAngles = new Vector3(-90f, 0f, 0f);
+        else if(zOffset == 1) this.gameObject.transform.eulerAngles = new Vector3(0f, 0f, 0f);
+        else if(zOffset == -1) this.gameObject.transform.eulerAngles = new Vector3(0f, 180f, 0f);
     }
 
-    private void ChangePlayerPosition(int x_offset, int y_offset, int z_offset)
+    private void ChangePlayerPosition(int xOffset, int yOffset, int zOffset)
     {
-        transform.localPosition = new Vector3(transform.localPosition.x + x_offset, transform.localPosition.y - y_offset, transform.localPosition.z + z_offset);
-        UpdateOffsetToPosition(x_offset, y_offset, z_offset);
+        transform.localPosition = new Vector3(transform.localPosition.x + xOffset, transform.localPosition.y - yOffset, transform.localPosition.z + zOffset);
+        UpdateOffsetToPosition(xOffset, yOffset, zOffset);
     }
 
-    private void UpdateOffsetToPosition(int x_offset, int y_offset, int z_offset)
+    private void UpdateOffsetToPosition(int xOffset, int yOffset, int zOffset)
     {
-        x += x_offset;
-        y += y_offset;
-        z += z_offset;
+        x += xOffset;
+        y += yOffset;
+        z += zOffset;
     }
 }

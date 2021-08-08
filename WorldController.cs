@@ -16,27 +16,25 @@ public class WorldController : MonoBehaviour
 
     private void Awake()
     {
-        cubes = worldBuilder.BuildWorld();
-        SetLayers();
-        ActivateNextTwoLayersBelow(0);
+        InitializeGame();
     }
 
-    public bool CanMoveInDirection(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    public bool CanMoveInDirection(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {
-        if(DirectionNotBlocked(x, y, z, x_offset, y_offset, z_offset))
+        if(DirectionNotBlocked(x, y, z, xOffset, yOffset, zOffset))
         {
-            if(CubeExistsInPosition(x + x_offset, y + y_offset, z + z_offset))
+            if(CubeExistsInPosition(x + xOffset, y + yOffset, z + zOffset))
             {
-                if(CubeIsMineable(x + x_offset, y + y_offset, z + z_offset))
+                if(CubeIsMineable(x + xOffset, y + yOffset, z + zOffset))
                 {
-                    OnCubeMined(x + x_offset, y + y_offset, z + z_offset);
-                    ActivateNeededLayers(y_offset, y);
-                    MoveShadowCube(y_offset, y);
+                    OnCubeMined(x + xOffset, y + yOffset, z + zOffset);
+                    ActivateNeededLayers(yOffset, y);
+                    MoveShadowCube(yOffset, y);
                     return true;
                 }
-                else if(y_offset == 0 && CubeCanMoveInDirection(x, y, z, x_offset, y_offset, z_offset))
+                else if(yOffset == 0 && CubeCanMoveInDirection(x, y, z, xOffset, yOffset, zOffset))
                 {
-                    MoveCubeToPosition(x + x_offset, y + y_offset, z + z_offset, x_offset, y_offset, z_offset);
+                    MoveCubeToPosition(x + xOffset, y + yOffset, z + zOffset, xOffset, yOffset, zOffset);
                     return true;
                 }
                 else
@@ -46,8 +44,8 @@ public class WorldController : MonoBehaviour
             }
             else
             {
-                ActivateNeededLayers(y_offset, y);
-                MoveShadowCube(y_offset, y);
+                ActivateNeededLayers(yOffset, y);
+                MoveShadowCube(yOffset, y);
                 return true;
             }
         }
@@ -55,6 +53,13 @@ public class WorldController : MonoBehaviour
         {
             return false;
         }
+    }
+
+    private void InitializeGame()
+    {
+        cubes = worldBuilder.BuildWorld();
+        SetLayers();
+        ActivateNextTwoLayersBelow(0);
     }
 
     private void SetLayers()
@@ -77,18 +82,18 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    private void ActivateNeededLayers(int y_offset, int y)
+    private void ActivateNeededLayers(int yOffset, int y)
     {
-        if(y_offset == 0) return;
-        else if(y_offset == 1) ActivateNextTwoLayersBelow(y+1);
-        else if(y_offset == -1) ActivateNextTwoLayersBelow(y-1);
+        if(yOffset == 0) return;
+        else if(yOffset == 1) ActivateNextTwoLayersBelow(y+1);
+        else if(yOffset == -1) ActivateNextTwoLayersBelow(y-1);
 
-        if(y == 0 && y_offset == 1)
+        if(y == 0 && yOffset == 1)
         {
             ActivateUndergroundSkybox();
             DisableWaterAndRain();
         } 
-        else if(y == 1 && y_offset == -1) 
+        else if(y == 1 && yOffset == -1) 
         {
             ActivateOvergroundSkybox();
             ActivateWaterAndRain();
@@ -133,40 +138,40 @@ public class WorldController : MonoBehaviour
         return isMineable;
     }
 
-    private void MoveCubeToPosition(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private void MoveCubeToPosition(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {
         
-        if(x + x_offset < 0 || x + x_offset > 15 || z + z_offset < 0 || z + z_offset > 15 || cubes[x,y,z] == null) return;
-        if(OverSimilarCube(x + x_offset, y + y_offset, z + z_offset)) 
+        if(x + xOffset < 0 || x + xOffset > 15 || z + zOffset < 0 || z + zOffset > 15 || cubes[x,y,z] == null) return;
+        if(OverSimilarCube(x + xOffset, y + yOffset, z + zOffset)) 
         {
-            CombineCubes(x, y, z, x_offset, y_offset, z_offset);
+            CombineCubes(x, y, z, xOffset, yOffset, zOffset);
         }
         else
         {
-            cubes[x,y,z].transform.position = cubes[x,y,z].transform.position + new Vector3(x_offset, y_offset, z_offset);
-            cubes[x + x_offset, y + y_offset, z + z_offset] = cubes[x,y,z];
+            cubes[x,y,z].transform.position = cubes[x,y,z].transform.position + new Vector3(xOffset, yOffset, zOffset);
+            cubes[x + xOffset, y + yOffset, z + zOffset] = cubes[x,y,z];
             cubes[x,y,z] = null;
         }
     }
 
-    private void CombineCubes(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private void CombineCubes(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {   
-        if(cubes[x,y,z].name.Contains("stone") || cubes[x + x_offset, y + y_offset, z + z_offset].name.Contains("stone")) return;
-        GameObject newCube = Instantiate(GetCorrectCreatableCube(cubes[x,y,z]), cubes[x + x_offset, y + y_offset, z + z_offset].transform.position, Quaternion.identity);
+        if(cubes[x,y,z].name.Contains("stone") || cubes[x + xOffset, y + yOffset, z + zOffset].name.Contains("stone")) return;
+        GameObject newCube = Instantiate(GetCorrectCreatableCube(cubes[x,y,z]), cubes[x + xOffset, y + yOffset, z + zOffset].transform.position, Quaternion.identity);
         newCube.transform.parent = layers[y].transform;
-        Destroy(cubes[x + x_offset, y + y_offset, z + z_offset]);
+        Destroy(cubes[x + xOffset, y + yOffset, z + zOffset]);
         Destroy(cubes[x,y,z]);
-        cubes[x + x_offset, y + y_offset, z + z_offset] = newCube;
+        cubes[x + xOffset, y + yOffset, z + zOffset] = newCube;
         cubes[x,y,z] = null;
     }
 
-    private void MoveShadowCube(int y_offset, int y)
+    private void MoveShadowCube(int yOffset, int y)
     {
-        if((y_offset == 1 && y < 0) || (y_offset == -1 && y == 0)) return; 
+        if((yOffset == 1 && y < 0) || (yOffset == -1 && y == 0)) return; 
 
         Vector3 originalPosition = shadowCube.transform.position;
-        if(y_offset == -1) shadowCube.transform.position = new Vector3(originalPosition.x, originalPosition.y + 1, originalPosition.z);
-        else if(y_offset == 1) shadowCube.transform.position = new Vector3(originalPosition.x, originalPosition.y - 1, originalPosition.z);
+        if(yOffset == -1) shadowCube.transform.position = new Vector3(originalPosition.x, originalPosition.y + 1, originalPosition.z);
+        else if(yOffset == 1) shadowCube.transform.position = new Vector3(originalPosition.x, originalPosition.y - 1, originalPosition.z);
         else return;
     }
 
@@ -179,10 +184,10 @@ public class WorldController : MonoBehaviour
         return numberCubes[4];
     }
 
-    private bool CubesAreSimilar(GameObject cube_1, GameObject cube_2)
+    private bool CubesAreSimilar(GameObject cube1, GameObject cube2)
     {
-        if(cube_1 == null || cube_2 == null) return false;
-        return cube_1.name == cube_2.name;
+        if(cube1 == null || cube2 == null) return false;
+        return cube1.name == cube2.name;
     }
 
     private bool OverSimilarCube(int x, int y, int z)
@@ -203,32 +208,32 @@ public class WorldController : MonoBehaviour
         else return null;
     }
 
-    private bool SimilarCubeInDirectionFound(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private bool SimilarCubeInDirectionFound(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {
-        if(CubesAreSimilar(cubes[x+x_offset, y+y_offset, z+z_offset], cubes[x+(x_offset*2), y+(y_offset*2), z+(z_offset*2)])) return true;
+        if(CubesAreSimilar(cubes[x+xOffset, y+yOffset, z+zOffset], cubes[x+(xOffset*2), y+(yOffset*2), z+(zOffset*2)])) return true;
         else return false;
     }
 
-    private bool NewCubePositionIsInsideBounds(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private bool NewCubePositionIsInsideBounds(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {
-        if(x <= 1 && x_offset == -1) return false;
-        else if(x >= 14 && x_offset == 1) return false;
-        else if(z <= 1 && z_offset == -1) return false;
-        else if(z >= 14 && z_offset == 1) return false;
+        if(x <= 1 && xOffset == -1) return false;
+        else if(x >= 14 && xOffset == 1) return false;
+        else if(z <= 1 && zOffset == -1) return false;
+        else if(z >= 14 && zOffset == 1) return false;
         else return true;
     }
 
-    private bool DirectionNotBlocked(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private bool DirectionNotBlocked(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {
         return 
         // clamp movement to bounds of the world, this could be done with mathf.clamp
-        ((x_offset == 1 && x < 15) || (x_offset == -1 && x > 0) || (y_offset == 1 && y < 63) || (y_offset == -1 && y > -1) || (z_offset == 1 && z < 15) || (z_offset == -1 && z > 0));
+        ((xOffset == 1 && x < 15) || (xOffset == -1 && x > 0) || (yOffset == 1 && y < 63) || (yOffset == -1 && y > -1) || (zOffset == 1 && z < 15) || (zOffset == -1 && z > 0));
     }
 
-    private bool CubeCanMoveInDirection(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private bool CubeCanMoveInDirection(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {
-        return NewCubePositionIsInsideBounds(x, y, z, x_offset, y_offset, z_offset) && 
-        (!CubeIsMineable(x + x_offset, y + y_offset, z + z_offset) && CubeExistsInPosition(x + x_offset, y + y_offset, z + z_offset) && (!CubeExistsInPosition(x + (x_offset * 2), y + (y_offset * 2), z + (z_offset * 2)) || SimilarCubeInDirectionFound(x, y, z, x_offset, y_offset, z_offset)));
+        return NewCubePositionIsInsideBounds(x, y, z, xOffset, yOffset, zOffset) && 
+        (!CubeIsMineable(x + xOffset, y + yOffset, z + zOffset) && CubeExistsInPosition(x + xOffset, y + yOffset, z + zOffset) && (!CubeExistsInPosition(x + (xOffset * 2), y + (yOffset * 2), z + (zOffset * 2)) || SimilarCubeInDirectionFound(x, y, z, xOffset, yOffset, zOffset)));
     }
 
     private void DisableWaterAndRain()
