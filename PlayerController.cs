@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public Camera mainCamera;
-    public WorldController worldController;
+    [SerializeField]
+    private Camera mainCamera;
+    [SerializeField]
+    private WorldController worldController;
+    
     private int x;
     private int y;
     private int z;
@@ -74,8 +77,6 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateOffsetToPosition(int xOffset, int yOffset, int zOffset)
     {
-        x += xOffset;
-        y += yOffset;
-        z += zOffset;
+        x += xOffset; y += yOffset; z += zOffset;
     }
 }

@@ -4,13 +4,21 @@ using UnityEngine;
 
 public class WorldController : MonoBehaviour
 {
-    public Camera mainCamera;
-    public GameObject water;
-    public GameObject rain;
-    public GameObject shadowCube;
-    public ParticleSystem miningEffect;
-    public WorldBuilder worldBuilder;
-    public List<GameObject> numberCubes = new List<GameObject>();
+    [SerializeField]
+    private Camera mainCamera;
+    [SerializeField]
+    private GameObject water;
+    [SerializeField]
+    private GameObject rain;
+    [SerializeField]
+    private GameObject shadowCube;
+    [SerializeField]
+    private ParticleSystem miningEffect;
+    [SerializeField]
+    private WorldBuilder worldBuilder;
+    [SerializeField]
+    private List<GameObject> numberCubes = new List<GameObject>();
+
     private GameObject[,,] cubes = new GameObject[16,64,16];
     private GameObject[] layers = new GameObject[64];
 

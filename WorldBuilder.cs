@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class WorldBuilder : MonoBehaviour
 {
-    public GameObject grassBlock;
-    public List<GameObject> gemBlocks = new List<GameObject>();
+    [SerializeField]
+    private GameObject grassBlock;
+    [SerializeField]
+    private List<GameObject> gemBlocks = new List<GameObject>();
 
     public GameObject[,,] BuildWorld()
     {
