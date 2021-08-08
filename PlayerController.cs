@@ -4,21 +4,37 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public Camera mainCamera;
     public WorldController worldController;
     private int x;
     private int y;
     private int z;
+    //camera follow variables:
+    private Vector3 cameraOffset;
+    private float cameraSmoothTime = 0.3F;
+    private Vector3 cameraVelocity = Vector3.zero;
 
     void Awake()
     {
-        x = 8;
-        y = -1;
-        z = 8;
+        InitializeVariables();
     }
 
     void Update()
     {
+        CameraFollow();
         HandleMovementInput();
+    }
+
+    void InitializeVariables()
+    {
+        cameraOffset = mainCamera.transform.position;
+        x = 8; y = -1; z = 8;
+    }
+
+    void CameraFollow()
+    {
+        Vector3 cameraTargetPosition = this.transform.position + cameraOffset;
+        mainCamera.transform.position = Vector3.SmoothDamp(mainCamera.transform.position, cameraTargetPosition, ref cameraVelocity, cameraSmoothTime);
     }
 
     void HandleMovementInput()

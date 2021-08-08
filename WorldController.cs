@@ -8,10 +8,8 @@ public class WorldController : MonoBehaviour
     public GameObject water;
     public GameObject rain;
     public WorldBuilder worldBuilder;
-    public GameObject goldIngot;
     public List<GameObject> numberCubes = new List<GameObject>();
     private GameObject[,,] cubes = new GameObject[16,64,16];
-    private List<GameObject> ingots = new List<GameObject>();
 
     /*
     public enum CybeType
@@ -60,7 +58,6 @@ public class WorldController : MonoBehaviour
             }
             else
             {
-                CollectIfOverIngot(new Vector3(x + x_offset, -y + y_offset, z + z_offset));
                 ActivateNeededLayers(y_offset, y);
                 return true;
             }
@@ -190,19 +187,6 @@ public class WorldController : MonoBehaviour
         return numberCubes[4];
     }
 
-    public void TurnMineralsToIngots(int x, int y, int z)
-    {
-        GameObject similar_cube = GetSimilarAdjacentCube(x, y, z);
-        Vector3 similar_cube_position = similar_cube.transform.position;
-        Vector3 original_cube_position = cubes[x, y, z].transform.position;
-        Destroy(similar_cube);
-        Destroy(cubes[x, y, z]);
-        GameObject ingot_1 = Instantiate(goldIngot, similar_cube_position, Quaternion.identity);
-        GameObject ingot_2 = Instantiate(goldIngot, original_cube_position, Quaternion.identity);
-        ingots.Add(ingot_1);
-        ingots.Add(ingot_2);
-    }
-
     public bool CubesAreSimilar(GameObject cube_1, GameObject cube_2)
     {
         if(cube_1 == null || cube_2 == null) return false;
@@ -234,20 +218,6 @@ public class WorldController : MonoBehaviour
         Debug.Log(cubes[x+x_offset, y+y_offset, z+z_offset].name + " " + cubes[x+(x_offset*2), y+(y_offset*2), z+(z_offset*2)].name);
         if(CubesAreSimilar(cubes[x+x_offset, y+y_offset, z+z_offset], cubes[x+(x_offset*2), y+(y_offset*2), z+(z_offset*2)])) return true;
         else return false;
-    }
-
-    public void CollectIfOverIngot(Vector3 player_position)
-    {
-        for(int i = 0; i < ingots.Count; i++)
-        {
-            if(Vector3.Distance(player_position, ingots[i].transform.position) < 0.25)
-            {
-                GameObject destroyable = ingots[i];
-                ingots.RemoveAt(i);
-                Destroy(destroyable);
-                return;
-            }
-        }
     }
 
     public bool NewCubePositionIsInsideBounds(int x, int y, int z, int x_offset, int y_offset, int z_offset)
