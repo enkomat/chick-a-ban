@@ -14,37 +14,11 @@ public class WorldController : MonoBehaviour
     private GameObject[,,] cubes = new GameObject[16,64,16];
     private GameObject[] layers = new GameObject[64];
 
-    /*
-    public enum CybeType
-    {
-        EMPTY,
-        GRASS,
-        DIRT,
-        GOLD,
-        RUBY,
-        DIAMOND,
-        METAL,
-        LIME,
-        PINK
-    }
-
-    private CubeType[,,] cubeTypes = new CubeType[16,64,16];
-    */
-
-    void Awake()
+    private void Awake()
     {
         cubes = worldBuilder.BuildWorld();
         SetLayers();
         ActivateNextTwoLayersBelow(0);
-    }
-
-    public void SetLayers()
-    {
-        for(int y = 0; y < 64; y++)
-        {
-            layers[y] = cubes[0, y, 0].transform.parent.gameObject;
-            layers[y].SetActive(false);
-        }
     }
 
     public bool CanMoveInDirection(int x, int y, int z, int x_offset, int y_offset, int z_offset)
@@ -83,7 +57,16 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    public void ActivateAllLayersAfterIndex(int layerIndex)
+    private void SetLayers()
+    {
+        for(int y = 0; y < 64; y++)
+        {
+            layers[y] = cubes[0, y, 0].transform.parent.gameObject;
+            layers[y].SetActive(false);
+        }
+    }
+
+    private void ActivateAllLayersAfterIndex(int layerIndex)
     {
         if(layerIndex < 0) return;
 
@@ -94,7 +77,7 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    void ActivateNeededLayers(int y_offset, int y)
+    private void ActivateNeededLayers(int y_offset, int y)
     {
         if(y_offset == 0) return;
         else if(y_offset == 1) ActivateNextTwoLayersBelow(y+1);
@@ -112,7 +95,7 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    public void ActivateNextTwoLayersBelow(int layerIndex)
+    private void ActivateNextTwoLayersBelow(int layerIndex)
     {
         if(layerIndex < 0) layerIndex = 0;
 
@@ -121,7 +104,7 @@ public class WorldController : MonoBehaviour
         layers[layerIndex+1].SetActive(true);
     }
 
-    public void DisableAllLayers()
+    private void DisableAllLayers()
     {
         for(int y = 0; y < 64; y++)
         {
@@ -129,7 +112,7 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    public void OnCubeMined(int x, int y, int z)
+    private void OnCubeMined(int x, int y, int z)
     {
         Destroy(cubes[x,y,z]);
         cubes[x,y,z] = null;
@@ -137,20 +120,20 @@ public class WorldController : MonoBehaviour
         miningEffect.Play();
     }
 
-    public bool CubeExistsInPosition(int x, int y, int z)
+    private bool CubeExistsInPosition(int x, int y, int z)
     {
         if(x < 0 || x > 15 || y < 0 || y > 63 || z < 0 || z > 15 || cubes[x,y,z] == null) return false;
         return cubes[x,y,z] != null;
     }
 
-    public bool CubeIsMineable(int x, int y, int z)
+    private bool CubeIsMineable(int x, int y, int z)
     {
         if(x < 0 || x > 15 || y < 0 || y > 63 || z < 0 || z > 15 || cubes[x,y,z] == null) return false;
         bool isMineable = cubes[x,y,z].name.Contains("dirt") || cubes[x,y,z].name.Contains("grass");
         return isMineable;
     }
 
-    public void MoveCubeToPosition(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private void MoveCubeToPosition(int x, int y, int z, int x_offset, int y_offset, int z_offset)
     {
         
         if(x + x_offset < 0 || x + x_offset > 15 || z + z_offset < 0 || z + z_offset > 15 || cubes[x,y,z] == null) return;
@@ -166,7 +149,7 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    public void CombineCubes(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private void CombineCubes(int x, int y, int z, int x_offset, int y_offset, int z_offset)
     {   
         if(cubes[x,y,z].name.Contains("stone") || cubes[x + x_offset, y + y_offset, z + z_offset].name.Contains("stone")) return;
         GameObject newCube = Instantiate(GetCorrectCreatableCube(cubes[x,y,z]), cubes[x + x_offset, y + y_offset, z + z_offset].transform.position, Quaternion.identity);
@@ -177,9 +160,9 @@ public class WorldController : MonoBehaviour
         cubes[x,y,z] = null;
     }
 
-    public void MoveShadowCube(int y_offset, int y)
+    private void MoveShadowCube(int y_offset, int y)
     {
-        if(y < 0) return; 
+        if((y_offset == 1 && y < 0) || (y_offset == -1 && y == 0)) return; 
 
         Vector3 originalPosition = shadowCube.transform.position;
         if(y_offset == -1) shadowCube.transform.position = new Vector3(originalPosition.x, originalPosition.y + 1, originalPosition.z);
@@ -187,7 +170,7 @@ public class WorldController : MonoBehaviour
         else return;
     }
 
-    public GameObject GetCorrectCreatableCube(GameObject combinable)
+    private GameObject GetCorrectCreatableCube(GameObject combinable)
     {
         if(combinable.name.Contains("1")) return numberCubes[1];
         else if(combinable.name.Contains("2")) return numberCubes[2];
@@ -196,13 +179,13 @@ public class WorldController : MonoBehaviour
         return numberCubes[4];
     }
 
-    public bool CubesAreSimilar(GameObject cube_1, GameObject cube_2)
+    private bool CubesAreSimilar(GameObject cube_1, GameObject cube_2)
     {
         if(cube_1 == null || cube_2 == null) return false;
         return cube_1.name == cube_2.name;
     }
 
-    public bool OverSimilarCube(int x, int y, int z)
+    private bool OverSimilarCube(int x, int y, int z)
     {
         if(x < 15 && CubesAreSimilar(cubes[x,y,z], cubes[x+1, y, z])) return true;
         else if(x > 0 && CubesAreSimilar(cubes[x,y,z], cubes[x-1, y, z])) return true;
@@ -211,7 +194,7 @@ public class WorldController : MonoBehaviour
         else return false;
     }
 
-    public GameObject GetSimilarAdjacentCube(int x, int y, int z)
+    private GameObject GetSimilarAdjacentCube(int x, int y, int z)
     {
         if(x < 15 && CubesAreSimilar(cubes[x,y,z], cubes[x+1, y, z])) return cubes[x+1, y, z];
         else if(x > 0 && CubesAreSimilar(cubes[x,y,z], cubes[x-1, y, z])) return cubes[x-1, y, z];
@@ -220,13 +203,13 @@ public class WorldController : MonoBehaviour
         else return null;
     }
 
-    public bool SimilarCubeInDirectionFound(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private bool SimilarCubeInDirectionFound(int x, int y, int z, int x_offset, int y_offset, int z_offset)
     {
         if(CubesAreSimilar(cubes[x+x_offset, y+y_offset, z+z_offset], cubes[x+(x_offset*2), y+(y_offset*2), z+(z_offset*2)])) return true;
         else return false;
     }
 
-    public bool NewCubePositionIsInsideBounds(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private bool NewCubePositionIsInsideBounds(int x, int y, int z, int x_offset, int y_offset, int z_offset)
     {
         if(x <= 1 && x_offset == -1) return false;
         else if(x >= 14 && x_offset == 1) return false;
@@ -235,37 +218,37 @@ public class WorldController : MonoBehaviour
         else return true;
     }
 
-    public bool DirectionNotBlocked(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private bool DirectionNotBlocked(int x, int y, int z, int x_offset, int y_offset, int z_offset)
     {
         return 
         // clamp movement to bounds of the world, this could be done with mathf.clamp
         ((x_offset == 1 && x < 15) || (x_offset == -1 && x > 0) || (y_offset == 1 && y < 63) || (y_offset == -1 && y > -1) || (z_offset == 1 && z < 15) || (z_offset == -1 && z > 0));
     }
 
-    public bool CubeCanMoveInDirection(int x, int y, int z, int x_offset, int y_offset, int z_offset)
+    private bool CubeCanMoveInDirection(int x, int y, int z, int x_offset, int y_offset, int z_offset)
     {
         return NewCubePositionIsInsideBounds(x, y, z, x_offset, y_offset, z_offset) && 
         (!CubeIsMineable(x + x_offset, y + y_offset, z + z_offset) && CubeExistsInPosition(x + x_offset, y + y_offset, z + z_offset) && (!CubeExistsInPosition(x + (x_offset * 2), y + (y_offset * 2), z + (z_offset * 2)) || SimilarCubeInDirectionFound(x, y, z, x_offset, y_offset, z_offset)));
     }
 
-    public void DisableWaterAndRain()
+    private void DisableWaterAndRain()
     {
         water.SetActive(false);
         rain.SetActive(false);
     }
 
-    public void ActivateWaterAndRain()
+    private void ActivateWaterAndRain()
     {
         water.SetActive(true);
         rain.SetActive(true);
     }
 
-    public void ActivateUndergroundSkybox()
+    private void ActivateUndergroundSkybox()
     {
         mainCamera.clearFlags = CameraClearFlags.SolidColor;
     }
 
-    public void ActivateOvergroundSkybox()
+    private void ActivateOvergroundSkybox()
     {
         mainCamera.clearFlags = CameraClearFlags.Skybox;
     }

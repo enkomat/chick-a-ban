@@ -14,40 +14,40 @@ public class PlayerController : MonoBehaviour
     private float cameraSmoothTime = 0.3F;
     private Vector3 cameraVelocity = Vector3.zero;
 
-    void Awake()
+    private void Awake()
     {
         InitializeVariables();
     }
 
-    void Update()
+    private void Update()
     {
         CameraFollow();
         HandleMovementInput();
     }
 
-    void InitializeVariables()
+    private void InitializeVariables()
     {
         cameraOffset = mainCamera.transform.position;
         x = 8; y = -1; z = 8;
     }
 
-    void CameraFollow()
+    private void CameraFollow()
     {
         Vector3 cameraTargetPosition = this.transform.position + cameraOffset;
         mainCamera.transform.position = Vector3.SmoothDamp(mainCamera.transform.position, cameraTargetPosition, ref cameraVelocity, cameraSmoothTime);
     }
 
-    void HandleMovementInput()
+    private void HandleMovementInput()
     {
         if(Input.GetKeyDown(KeyCode.RightArrow)) MovePlayer(1, 0, 0);
         else if(Input.GetKeyDown(KeyCode.LeftArrow)) MovePlayer(-1, 0, 0);
         else if(Input.GetKeyDown(KeyCode.UpArrow)) MovePlayer(0, 0, 1);
         else if(Input.GetKeyDown(KeyCode.DownArrow)) MovePlayer(0, 0, -1);
-        else if(Input.GetKeyDown(KeyCode.Space)) MovePlayer(0, 1, 0); //dig down a layer
-        else if(Input.GetKeyDown(KeyCode.C)) MovePlayer(0, -1, 0); //move up a layer
+        else if(Input.GetKeyDown(KeyCode.S)) MovePlayer(0, 1, 0); //dig down a layer
+        else if(Input.GetKeyDown(KeyCode.W)) MovePlayer(0, -1, 0); //move up a layer
     }
 
-    void MovePlayer(int x_offset, int y_offset, int z_offset)
+    private void MovePlayer(int x_offset, int y_offset, int z_offset)
     {
         if(worldController.CanMoveInDirection(x, y, z, x_offset, y_offset, z_offset))
         {
@@ -56,7 +56,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void RotatePlayerInCorrectDirection(int x_offset, int y_offset, int z_offset)
+    private void RotatePlayerInCorrectDirection(int x_offset, int y_offset, int z_offset)
     {
         if(x_offset == 1) this.gameObject.transform.eulerAngles = new Vector3(0f, 90f, 0f);
         else if(x_offset == -1) this.gameObject.transform.eulerAngles = new Vector3(0f, -90f, 0f);
@@ -66,13 +66,13 @@ public class PlayerController : MonoBehaviour
         else if(z_offset == -1) this.gameObject.transform.eulerAngles = new Vector3(0f, 180f, 0f);
     }
 
-    void ChangePlayerPosition(int x_offset, int y_offset, int z_offset)
+    private void ChangePlayerPosition(int x_offset, int y_offset, int z_offset)
     {
         transform.localPosition = new Vector3(transform.localPosition.x + x_offset, transform.localPosition.y - y_offset, transform.localPosition.z + z_offset);
         UpdateOffsetToPosition(x_offset, y_offset, z_offset);
     }
 
-    void UpdateOffsetToPosition(int x_offset, int y_offset, int z_offset)
+    private void UpdateOffsetToPosition(int x_offset, int y_offset, int z_offset)
     {
         x += x_offset;
         y += y_offset;
