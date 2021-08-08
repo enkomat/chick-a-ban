@@ -7,9 +7,12 @@ public class WorldController : MonoBehaviour
     public Camera mainCamera;
     public GameObject water;
     public GameObject rain;
+    public GameObject shadowCube;
+    public ParticleSystem miningEffect;
     public WorldBuilder worldBuilder;
     public List<GameObject> numberCubes = new List<GameObject>();
     private GameObject[,,] cubes = new GameObject[16,64,16];
+    private GameObject[] layers = new GameObject[64];
 
     /*
     public enum CybeType
@@ -31,7 +34,17 @@ public class WorldController : MonoBehaviour
     void Awake()
     {
         cubes = worldBuilder.BuildWorld();
+        SetLayers();
         ActivateNextTwoLayersBelow(0);
+    }
+
+    public void SetLayers()
+    {
+        for(int y = 0; y < 64; y++)
+        {
+            layers[y] = cubes[0, y, 0].transform.parent.gameObject;
+            layers[y].SetActive(false);
+        }
     }
 
     public bool CanMoveInDirection(int x, int y, int z, int x_offset, int y_offset, int z_offset)
@@ -44,6 +57,7 @@ public class WorldController : MonoBehaviour
                 {
                     OnCubeMined(x + x_offset, y + y_offset, z + z_offset);
                     ActivateNeededLayers(y_offset, y);
+                    MoveShadowCube(y_offset, y);
                     return true;
                 }
                 else if(y_offset == 0 && CubeCanMoveInDirection(x, y, z, x_offset, y_offset, z_offset))
@@ -59,6 +73,7 @@ public class WorldController : MonoBehaviour
             else
             {
                 ActivateNeededLayers(y_offset, y);
+                MoveShadowCube(y_offset, y);
                 return true;
             }
         }
@@ -68,26 +83,14 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    public void ActivateWorldLayer(int layerIndex)
-    {
-        if(layerIndex < 0) return;
-
-        for(int x = 0; x < 16; x++)
-        {
-            for(int z = 0; z < 16; z++)
-            {
-                if(cubes[x,layerIndex,z] != null) cubes[x,layerIndex,z].SetActive(true);
-            }
-        }
-    }
-
     public void ActivateAllLayersAfterIndex(int layerIndex)
     {
         if(layerIndex < 0) return;
 
         for(int y = 0; y < 64; y++)
         {
-            if(y >= layerIndex) ActivateWorldLayer(y);
+            if(y >= layerIndex) layers[y].SetActive(true);
+            else layers[y].SetActive(false);
         }
     }
 
@@ -114,29 +117,24 @@ public class WorldController : MonoBehaviour
         if(layerIndex < 0) layerIndex = 0;
 
         DisableAllLayers();
-        ActivateWorldLayer(layerIndex);
-        ActivateWorldLayer(layerIndex+1);
+        layers[layerIndex].SetActive(true);
+        layers[layerIndex+1].SetActive(true);
     }
 
     public void DisableAllLayers()
     {
-        for(int x = 0; x < 16; x++)
+        for(int y = 0; y < 64; y++)
         {
-            for(int y = 0; y < 64; y++)
-            {
-                for(int z = 0; z < 16; z++)
-                {
-                    if(cubes[x,y,z] != null) cubes[x,y,z].SetActive(false);
-                }
-            }
+            layers[y].SetActive(false);
         }
     }
 
     public void OnCubeMined(int x, int y, int z)
     {
-        Debug.Log(cubes[x,y,z].name);
         Destroy(cubes[x,y,z]);
         cubes[x,y,z] = null;
+        miningEffect.transform.position = new Vector3(x, -y, z);
+        miningEffect.Play();
     }
 
     public bool CubeExistsInPosition(int x, int y, int z)
@@ -156,7 +154,6 @@ public class WorldController : MonoBehaviour
     {
         
         if(x + x_offset < 0 || x + x_offset > 15 || z + z_offset < 0 || z + z_offset > 15 || cubes[x,y,z] == null) return;
-        Debug.Log(cubes[x,y,z]);
         if(OverSimilarCube(x + x_offset, y + y_offset, z + z_offset)) 
         {
             CombineCubes(x, y, z, x_offset, y_offset, z_offset);
@@ -171,11 +168,23 @@ public class WorldController : MonoBehaviour
 
     public void CombineCubes(int x, int y, int z, int x_offset, int y_offset, int z_offset)
     {   
+        if(cubes[x,y,z].name.Contains("stone") || cubes[x + x_offset, y + y_offset, z + z_offset].name.Contains("stone")) return;
         GameObject newCube = Instantiate(GetCorrectCreatableCube(cubes[x,y,z]), cubes[x + x_offset, y + y_offset, z + z_offset].transform.position, Quaternion.identity);
+        newCube.transform.parent = layers[y].transform;
         Destroy(cubes[x + x_offset, y + y_offset, z + z_offset]);
         Destroy(cubes[x,y,z]);
         cubes[x + x_offset, y + y_offset, z + z_offset] = newCube;
         cubes[x,y,z] = null;
+    }
+
+    public void MoveShadowCube(int y_offset, int y)
+    {
+        if(y < 0) return; 
+
+        Vector3 originalPosition = shadowCube.transform.position;
+        if(y_offset == -1) shadowCube.transform.position = new Vector3(originalPosition.x, originalPosition.y + 1, originalPosition.z);
+        else if(y_offset == 1) shadowCube.transform.position = new Vector3(originalPosition.x, originalPosition.y - 1, originalPosition.z);
+        else return;
     }
 
     public GameObject GetCorrectCreatableCube(GameObject combinable)
@@ -213,9 +222,6 @@ public class WorldController : MonoBehaviour
 
     public bool SimilarCubeInDirectionFound(int x, int y, int z, int x_offset, int y_offset, int z_offset)
     {
-        Debug.Log("CubesAreSimilar: " + CubesAreSimilar(cubes[x,y,z], cubes[x+x_offset, y+y_offset, z+z_offset]));
-        Debug.Log(x_offset + " " + z_offset);
-        Debug.Log(cubes[x+x_offset, y+y_offset, z+z_offset].name + " " + cubes[x+(x_offset*2), y+(y_offset*2), z+(z_offset*2)].name);
         if(CubesAreSimilar(cubes[x+x_offset, y+y_offset, z+z_offset], cubes[x+(x_offset*2), y+(y_offset*2), z+(z_offset*2)])) return true;
         else return false;
     }

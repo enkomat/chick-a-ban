@@ -39,18 +39,21 @@ public class PlayerController : MonoBehaviour
 
     void HandleMovementInput()
     {
-        if(Input.GetKeyDown(KeyCode.RightArrow) && worldController.CanMoveInDirection(x, y, z, 1, 0, 0)) MovePlayer(1, 0, 0);
-        else if(Input.GetKeyDown(KeyCode.LeftArrow) && worldController.CanMoveInDirection(x, y, z, -1, 0, 0)) MovePlayer(-1, 0, 0);
-        else if(Input.GetKeyDown(KeyCode.UpArrow) && worldController.CanMoveInDirection(x, y, z, 0, 0, 1)) MovePlayer(0, 0, 1);
-        else if(Input.GetKeyDown(KeyCode.DownArrow) && worldController.CanMoveInDirection(x, y, z, 0, 0, -1)) MovePlayer(0, 0, -1);
-        else if(Input.GetKeyDown(KeyCode.Space) && worldController.CanMoveInDirection(x, y, z, 0, 1, 0)) MovePlayer(0, 1, 0);
-        else if(Input.GetKeyDown(KeyCode.C) && worldController.CanMoveInDirection(x, y, z, 0, -1, 0)) MovePlayer(0, -1, 0);
+        if(Input.GetKeyDown(KeyCode.RightArrow)) MovePlayer(1, 0, 0);
+        else if(Input.GetKeyDown(KeyCode.LeftArrow)) MovePlayer(-1, 0, 0);
+        else if(Input.GetKeyDown(KeyCode.UpArrow)) MovePlayer(0, 0, 1);
+        else if(Input.GetKeyDown(KeyCode.DownArrow)) MovePlayer(0, 0, -1);
+        else if(Input.GetKeyDown(KeyCode.Space)) MovePlayer(0, 1, 0); //dig down a layer
+        else if(Input.GetKeyDown(KeyCode.C)) MovePlayer(0, -1, 0); //move up a layer
     }
 
     void MovePlayer(int x_offset, int y_offset, int z_offset)
     {
-        RotatePlayerInCorrectDirection(x_offset, y_offset, z_offset);
-        ChangePlayerPosition(x_offset, y_offset, z_offset);
+        if(worldController.CanMoveInDirection(x, y, z, x_offset, y_offset, z_offset))
+        {
+            RotatePlayerInCorrectDirection(x_offset, y_offset, z_offset);
+            ChangePlayerPosition(x_offset, y_offset, z_offset);
+        }
     }
 
     void RotatePlayerInCorrectDirection(int x_offset, int y_offset, int z_offset)
@@ -67,7 +70,6 @@ public class PlayerController : MonoBehaviour
     {
         transform.localPosition = new Vector3(transform.localPosition.x + x_offset, transform.localPosition.y - y_offset, transform.localPosition.z + z_offset);
         UpdateOffsetToPosition(x_offset, y_offset, z_offset);
-        Debug.Log(x + " " + " " + y + " " + z);
     }
 
     void UpdateOffsetToPosition(int x_offset, int y_offset, int z_offset)
