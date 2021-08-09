@@ -15,6 +15,8 @@ public class WorldController : MonoBehaviour
     [SerializeField]
     private GameObject shadowCube;
     [SerializeField]
+    private GameObject scoreCubeHolder;
+    [SerializeField]
     private ParticleSystem miningEffect;
     [SerializeField]
     private ParticleSystem combineEffect;
@@ -106,11 +108,13 @@ public class WorldController : MonoBehaviour
         {
             ChangeLightIntensity(0.75f);
             DisableWaterAndRain();
+            DisableScoreCube();
         } 
         else if(y == 1 && yOffset == -1) 
         {
             ChangeLightIntensity(1.4f);
             ActivateWaterAndRain();
+            ActivateScoreCube();
         }
     }
 
@@ -153,11 +157,20 @@ public class WorldController : MonoBehaviour
 
     private void MoveCubeToPosition(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {
-        
         if(x + xOffset < 0 || x + xOffset > 15 || z + zOffset < 0 || z + zOffset > 15 || cubes[x,y,z] == null) return;
-        
         if(yOffset != 0) cubes[x,y,z].transform.parent = layers[y + yOffset].transform;
-        if(OverSimilarCube(x + xOffset, y + yOffset, z + zOffset)) 
+        
+        if(CollisionWithScoreCube(x, y, z, xOffset, yOffset, zOffset))
+        {
+            Debug.Log("collision happened with score cube");
+            if(CubeIsSimilarToScoreCube(cubes[x,y,z])) 
+            {
+                Destroy(cubes[x,y,z]);
+                cubes[x,y,z] = null;
+                UpdateScoreCube();
+            }
+        }
+        else if(OverSimilarCube(x + xOffset, y + yOffset, z + zOffset)) 
         {
             CombineCubes(x, y, z, xOffset, yOffset, zOffset);
         }
@@ -226,6 +239,11 @@ public class WorldController : MonoBehaviour
         return cube1.name == cube2.name;
     }
 
+    private bool CubeIsSimilarToScoreCube(GameObject cube)
+    {
+        return CubesAreSimilar(cube, scoreCubeHolder.transform.GetChild(0).gameObject);
+    }
+
     private bool OverSimilarCube(int x, int y, int z)
     {
         if(x < 15 && CubesAreSimilar(cubes[x,y,z], cubes[x+1, y, z])) return true;
@@ -261,9 +279,27 @@ public class WorldController : MonoBehaviour
 
     private bool DirectionNotBlocked(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {
+        //return that direction is blocked if player tries to walk into score cube
+        if(CollisionWithScoreCube(x, y, z, xOffset, yOffset, zOffset)) return false; 
+
         return 
         // clamp movement to bounds of the world, this could be done with mathf.clamp
         ((xOffset == 1 && x < 15) || (xOffset == -1 && x > 0) || (yOffset == 1 && y < 63) || (yOffset == -1 && y > -1) || (zOffset == 1 && z < 15) || (zOffset == -1 && z > 0));
+    }
+
+    private bool CollisionWithScoreCube(int x, int y, int z, int xOffset, int yOffset, int zOffset)
+    {
+        return y < 1 && (x + xOffset > 6 && x + xOffset < 10 && z + zOffset > 6 && z + zOffset < 10);
+    }
+
+    private void UpdateScoreCube()
+    {
+        GameObject currentScoreCube = scoreCubeHolder.transform.GetChild(0).gameObject;
+        GameObject newScoreCube = Instantiate(GetCorrectCreatableCube(currentScoreCube), scoreCubeHolder.transform.position, Quaternion.identity);
+        newScoreCube.transform.parent = scoreCubeHolder.transform;
+        newScoreCube.transform.SetAsFirstSibling();
+        newScoreCube.transform.localScale = Vector3.one;
+        Destroy(currentScoreCube);
     }
 
     private bool CubeCanMoveInDirection(int x, int y, int z, int xOffset, int yOffset, int zOffset)
@@ -282,6 +318,16 @@ public class WorldController : MonoBehaviour
     {
         water.SetActive(true);
         rain.SetActive(true);
+    }
+
+    private void ActivateScoreCube()
+    {
+        scoreCubeHolder.SetActive(true);
+    }  
+
+    private void DisableScoreCube()
+    {
+        scoreCubeHolder.SetActive(false);
     }
 
     private void ActivateUndergroundSkybox()

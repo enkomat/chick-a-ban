@@ -20,6 +20,7 @@ public class WorldBuilder : MonoBehaviour
             {
                 for(int z = 0; z < 16; z++)
                 {
+                    if(y == 0 && (x > 5 && x < 11 && z > 5 && z < 11)) continue; //no cubes in middle on ground level
                     GameObject cubeType = grassBlock;
                     if(y > 0) 
                     {

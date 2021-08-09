@@ -32,7 +32,9 @@ public class PlayerController : MonoBehaviour
     private void InitializeVariables()
     {
         cameraOffset = mainCamera.transform.position;
-        x = 8; y = -1; z = 8;
+        x = Mathf.RoundToInt(this.transform.position.x); 
+        y = -1; 
+        z = Mathf.RoundToInt(this.transform.position.z);
     }
 
     private void CameraFollow()
