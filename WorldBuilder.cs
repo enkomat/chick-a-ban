@@ -21,7 +21,11 @@ public class WorldBuilder : MonoBehaviour
                 for(int z = 0; z < 16; z++)
                 {
                     GameObject cubeType = grassBlock;
-                    if(y > 0) cubeType = GetRandomGem();
+                    if(y > 0) 
+                    {
+                        if(x == 0 || x == 15 || z == 0 || z == 15) cubeType = gemBlocks[8]; //create dirt cube
+                        else cubeType = GetRandomGem();
+                    }
                     GameObject newCube = Instantiate(cubeType, new Vector3(x, -y, z), Quaternion.identity);
                     newCube.transform.SetParent(layerHolder.transform);
                     cubes[x,y,z] = newCube;

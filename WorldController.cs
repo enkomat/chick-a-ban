@@ -7,6 +7,8 @@ public class WorldController : MonoBehaviour
     [SerializeField]
     private Camera mainCamera;
     [SerializeField]
+    private Light mainLight;
+    [SerializeField]
     private GameObject water;
     [SerializeField]
     private GameObject rain;
@@ -14,6 +16,8 @@ public class WorldController : MonoBehaviour
     private GameObject shadowCube;
     [SerializeField]
     private ParticleSystem miningEffect;
+    [SerializeField]
+    private ParticleSystem combineEffect;
     [SerializeField]
     private WorldBuilder worldBuilder;
     [SerializeField]
@@ -40,9 +44,11 @@ public class WorldController : MonoBehaviour
                     MoveShadowCube(yOffset, y);
                     return true;
                 }
-                else if(yOffset == 0 && CubeCanMoveInDirection(x, y, z, xOffset, yOffset, zOffset))
+                else if(CubeCanMoveInDirection(x, y, z, xOffset, yOffset, zOffset))
                 {
                     MoveCubeToPosition(x + xOffset, y + yOffset, z + zOffset, xOffset, yOffset, zOffset);
+                    ActivateNeededLayers(yOffset, y);
+                    MoveShadowCube(yOffset, y);
                     return true;
                 }
                 else
@@ -98,12 +104,12 @@ public class WorldController : MonoBehaviour
 
         if(y == 0 && yOffset == 1)
         {
-            ActivateUndergroundSkybox();
+            ChangeLightIntensity(0.75f);
             DisableWaterAndRain();
         } 
         else if(y == 1 && yOffset == -1) 
         {
-            ActivateOvergroundSkybox();
+            ChangeLightIntensity(1.4f);
             ActivateWaterAndRain();
         }
     }
@@ -129,8 +135,7 @@ public class WorldController : MonoBehaviour
     {
         Destroy(cubes[x,y,z]);
         cubes[x,y,z] = null;
-        miningEffect.transform.position = new Vector3(x, -y, z);
-        miningEffect.Play();
+        PlayMiningEffect(x, y, z);
     }
 
     private bool CubeExistsInPosition(int x, int y, int z)
@@ -150,13 +155,15 @@ public class WorldController : MonoBehaviour
     {
         
         if(x + xOffset < 0 || x + xOffset > 15 || z + zOffset < 0 || z + zOffset > 15 || cubes[x,y,z] == null) return;
+        
+        if(yOffset != 0) cubes[x,y,z].transform.parent = layers[y + yOffset].transform;
         if(OverSimilarCube(x + xOffset, y + yOffset, z + zOffset)) 
         {
             CombineCubes(x, y, z, xOffset, yOffset, zOffset);
         }
         else
         {
-            cubes[x,y,z].transform.position = cubes[x,y,z].transform.position + new Vector3(xOffset, yOffset, zOffset);
+            cubes[x,y,z].transform.position = cubes[x,y,z].transform.position + new Vector3(xOffset, -yOffset, zOffset);
             cubes[x + xOffset, y + yOffset, z + zOffset] = cubes[x,y,z];
             cubes[x,y,z] = null;
         }
@@ -165,12 +172,26 @@ public class WorldController : MonoBehaviour
     private void CombineCubes(int x, int y, int z, int xOffset, int yOffset, int zOffset)
     {   
         if(cubes[x,y,z].name.Contains("stone") || cubes[x + xOffset, y + yOffset, z + zOffset].name.Contains("stone")) return;
+        
         GameObject newCube = Instantiate(GetCorrectCreatableCube(cubes[x,y,z]), cubes[x + xOffset, y + yOffset, z + zOffset].transform.position, Quaternion.identity);
         newCube.transform.parent = layers[y].transform;
         Destroy(cubes[x + xOffset, y + yOffset, z + zOffset]);
         Destroy(cubes[x,y,z]);
         cubes[x + xOffset, y + yOffset, z + zOffset] = newCube;
         cubes[x,y,z] = null;
+        PlayCombineEffect(x, y, z, xOffset, yOffset, zOffset);
+    }
+
+    private void PlayCombineEffect(int x, int y, int z, int xOffset, int yOffset, int zOffset)
+    {
+        combineEffect.transform.position = new Vector3(x + xOffset, -y + yOffset, z + zOffset);
+        combineEffect.Play();
+    }
+
+    private void PlayMiningEffect(int x, int y, int z)
+    {
+        miningEffect.transform.position = new Vector3(x, -y, z);
+        miningEffect.Play();
     }
 
     private void MoveShadowCube(int yOffset, int y)
@@ -189,7 +210,14 @@ public class WorldController : MonoBehaviour
         else if(combinable.name.Contains("2")) return numberCubes[2];
         else if(combinable.name.Contains("4")) return numberCubes[3];
         else if(combinable.name.Contains("8")) return numberCubes[4];
-        return numberCubes[4];
+        else if(combinable.name.Contains("16")) return numberCubes[5];
+        else if(combinable.name.Contains("32")) return numberCubes[6];
+        else if(combinable.name.Contains("64")) return numberCubes[7];
+        else if(combinable.name.Contains("128")) return numberCubes[8];
+        else if(combinable.name.Contains("256")) return numberCubes[9];
+        else if(combinable.name.Contains("512")) return numberCubes[10];
+        else if(combinable.name.Contains("1024")) return numberCubes[11];
+        return numberCubes[0];
     }
 
     private bool CubesAreSimilar(GameObject cube1, GameObject cube2)
@@ -264,5 +292,10 @@ public class WorldController : MonoBehaviour
     private void ActivateOvergroundSkybox()
     {
         mainCamera.clearFlags = CameraClearFlags.Skybox;
+    }
+
+    private void ChangeLightIntensity(float amt)
+    {
+        mainLight.intensity = amt;
     }
 }

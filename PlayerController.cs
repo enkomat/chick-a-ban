@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 cameraOffset;
     private float cameraSmoothTime = 0.3F;
     private Vector3 cameraVelocity = Vector3.zero;
+    
 
     private void Awake()
     {
